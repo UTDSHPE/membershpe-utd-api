@@ -12,7 +12,7 @@ app.use(express.json());
 
 // Google Sheets setup
 const auth = new google.auth.GoogleAuth({
-  keyFile: `etc/secrets/${process.env.SERVICE_ACCOUNT_PRIVATE_KEY}`, // Replace with your service account key file path
+  keyFile: `${process.env.SERVICE_ACCOUNT_PRIVATE_KEY}`, // Replace with your service account key file path
   scopes: ['https://www.googleapis.com/auth/spreadsheets'],
 });
 
