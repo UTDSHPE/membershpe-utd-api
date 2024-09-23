@@ -2,7 +2,7 @@
 
 # dependencies
 /node_modules
-/google_credentials
+/etc
 /.pnp
 .pnp.js
 
