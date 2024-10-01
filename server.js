@@ -25,8 +25,6 @@ app.post('/api/membershpe', async (req, res) => {
   const words = name.replace(/,/g, '').trim().split(/\s+/);
   const altName = `${words[0]} ${words[words.length - 1]}`;
 
-  console.log(altName);
-
   if (!name || !netID) {
     return res.status(400).json({ error: 'Name and ID are required' });
   }
@@ -40,8 +38,9 @@ app.post('/api/membershpe', async (req, res) => {
     });
     const signUpSheetRows = signUpSheetResponse.data.values;
     const signedUp = signUpSheetRows.some(row => 
-      (row[2].toLowerCase().replace(/,/g, '') === name.toLowerCase() || row[2].toLowerCase().replace(/,/g, '') == altName.toLowerCase()) &&
-      row[6].toLowerCase() === `${netID.toLowerCase()}@utdallas.edu`
+      (row[2].toLowerCase().replace(/^[^a-zA-Z]+|[^a-zA-Z]+$/g, '').replace(/,/g, '') === name.toLowerCase() ||
+      row[2].toLowerCase().replace(/^[^a-zA-Z]+|[^a-zA-Z]+$/g, '').replace(/,/g, '') == altName.toLowerCase()) &&
+      row[6].toLowerCase().replace(/,/g, '') === `${netID.toLowerCase()}@utdallas.edu`
     );
 
     // request rows from paid dues sheet
@@ -50,7 +49,11 @@ app.post('/api/membershpe', async (req, res) => {
       range: 'Sheet1',
     });
     const paidDuesSheetRows = paidDuesSheetResponse.data.values;
-    const paid = paidDuesSheetRows.some(row => (row[0].toLowerCase() === name || row[0].toLowerCase() == altName) && row[1].toLowerCase() === netID && row[3].toLowerCase() === 'true');
+    const paid = paidDuesSheetRows.some(row =>
+      (row[0].toLowerCase().replace(/^[^a-zA-Z]+|[^a-zA-Z]+$/g, '').replace(/,/g, '') === name.toLowerCase() ||
+      row[0].toLowerCase().replace(/^[^a-zA-Z]+|[^a-zA-Z]+$/g, '').replace(/,/g, '') == altName.toLowerCase()) &&
+      row[1].toLowerCase().replace(/,/g, '') === netID && row[3].toLowerCase() === 'true'
+    );
 
     res.json({ signedUp, paid });
   } catch (error) {
