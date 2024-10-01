@@ -20,10 +20,12 @@ const sheets = google.sheets({ version: 'v4', auth });
 
 // API endpoint to validate members
 app.post('/api/membershpe', async (req, res) => {
-  const { firstName, lastName, netID } = req.body;
+  const { name, netID } = req.body;
 
-  const name = `${firstName} ${lastName}`.toLowerCase();
-  const altName = `${firstName}, ${lastName}`.toLowerCase();
+  const words = name.replace(/,/g, '').trim().split(/\s+/);
+  const altName = `${words[0]} ${words[words.length - 1]}`;
+
+  console.log(altName);
 
   if (!name || !netID) {
     return res.status(400).json({ error: 'Name and ID are required' });
@@ -37,7 +39,10 @@ app.post('/api/membershpe', async (req, res) => {
       range: 'Form Responses 1',
     });
     const signUpSheetRows = signUpSheetResponse.data.values;
-    const signedUp = signUpSheetRows.some(row => (row[2].toLowerCase() === name || row[2].toLowerCase() == altName) && row[6].toLowerCase() === `${netID}@utdallas.edu`);
+    const signedUp = signUpSheetRows.some(row => 
+      (row[2].toLowerCase().replace(/,/g, '') === name.toLowerCase() || row[2].toLowerCase().replace(/,/g, '') == altName.toLowerCase()) &&
+      row[6].toLowerCase() === `${netID.toLowerCase()}@utdallas.edu`
+    );
 
     // request rows from paid dues sheet
     const paidDuesSheetResponse = await sheets.spreadsheets.values.get({
@@ -64,7 +69,7 @@ app.get('/api/responses/rows', async (req, res) => {
   res.status(200).json({ rows })
 })
 
-app.get('/api/responses/metadata', async (req, res) => {
+app.get('/api/responses', async (req, res) => {
 
   const spreadsheetId = process.env.RESPONSES_GOOGLE_SHEET_ID;
   try {
@@ -88,7 +93,7 @@ app.get('/api/dues/rows', async (req, res) => {
 })
 
 
-app.get('/api/dues/metadata', async (req, res) => {
+app.get('/api/dues', async (req, res) => {
 
   const spreadsheetId = process.env.PAID_DUES_GOOGLE_SHEET_ID;
   try {
